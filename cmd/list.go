@@ -49,6 +49,7 @@ func cmdBackupList(c *cli.Context) {
 func doBackupList(c *cli.Context) error {
 	var err error
 
+	logrus.Errorf("Start doBackupList")
 	if c.NArg() == 0 {
 		return RequiredMissingError("dest URL")
 	}

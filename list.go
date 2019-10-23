@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/longhorn/backupstore/util"
+	"github.com/sirupsen/logrus"
 )
 
 type VolumeInfo struct {
@@ -80,21 +81,26 @@ func List(volumeName, destURL string, volumeOnly bool) (map[string]*VolumeInfo, 
 	}
 	resp := make(map[string]*VolumeInfo)
 	if volumeName != "" {
+		logrus.Errorf("Backup volume name is specified to %v, start to check it", volumeName)
 		volumeInfo, err := addListVolume(volumeName, driver, volumeOnly)
 		if err != nil {
 			return nil, err
 		}
 		resp[volumeName] = volumeInfo
 	} else {
+		logrus.Errorf("Backup volume name is not specified, start to get all volumes")
 		volumeNames, err := getVolumeNames(driver)
 		if err != nil {
 			return nil, err
 		}
+		logrus.Errorf("Backup volume name is not specified, succeed to get all volumes")
 		for _, volumeName := range volumeNames {
+			logrus.Errorf("Start to check the backup volume %v", volumeName)
 			volumeInfo, err := addListVolume(volumeName, driver, volumeOnly)
 			if err != nil {
 				return nil, err
 			}
+			logrus.Errorf("Succeed to check the backup volume %v", volumeName)
 			resp[volumeName] = volumeInfo
 		}
 	}

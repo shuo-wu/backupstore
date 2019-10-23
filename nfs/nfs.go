@@ -40,6 +40,7 @@ func init() {
 }
 
 func initFunc(destURL string) (backupstore.BackupStoreDriver, error) {
+	logrus.Errorf("Start to register NFS driver for %v", destURL)
 	b := &BackupStoreDriver{}
 	b.FileSystemOperator = fsops.NewFileSystemOperator(b)
 
@@ -64,12 +65,19 @@ func initFunc(destURL string) (backupstore.BackupStoreDriver, error) {
 		return nil, fmt.Errorf("Cannot create mount directory %v for NFS server", b.mountDir)
 	}
 
+	logrus.Errorf("Start to mount NFS dir %v to %v", b.serverPath, b.mountDir)
+
 	if err := b.mount(); err != nil {
 		return nil, fmt.Errorf("Cannot mount nfs %v: %v", b.serverPath, err)
 	}
+
+	logrus.Errorf("Mounted NFS dir %v to %v, Start to ls", b.serverPath, b.mountDir)
+
 	if _, err := b.List(""); err != nil {
 		return nil, fmt.Errorf("NFS path %v doesn't exist or is not a directory", b.serverPath)
 	}
+
+	log.Errorf("Loaded driver for %v", b.destURL)
 
 	b.destURL = KIND + "://" + b.serverPath
 	log.Debugf("Loaded driver for %v", b.destURL)
@@ -79,7 +87,7 @@ func initFunc(destURL string) (backupstore.BackupStoreDriver, error) {
 func (b *BackupStoreDriver) mount() error {
 	var err error
 	if !util.IsMounted(b.mountDir) {
-		_, err = util.Execute("mount", []string{"-t", "nfs4", b.serverPath, b.mountDir})
+		_, err = util.Execute("mount", []string{"-t", "nfs4", "-o", "actimeo=1", b.serverPath, b.mountDir})
 	}
 	return err
 }
